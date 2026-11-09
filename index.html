@@ -468,7 +468,7 @@ function updIdle(dx,kj){
   if(t>=IDLE.scratchA&&t<IDLE.scratchB&&t%7===0&&AC)noise(AC.currentTime,0.035,0.025);
   if(t===IDLE.peeStream&&AC)noise(AC.currentTime,(IDLE.peeStop-IDLE.peeStream)/60,0.035);
   if(t>=IDLE.peeStream&&t<IDLE.peeStop){
-    const gx=P.x+14-P.face*30,gy=P.y+P.h;
+    const gx=P.x+14-P.face*34,gy=P.y+P.h;
     let pd=L.pud.find(q=>Math.abs(q.x-gx)<8&&Math.abs(q.y-gy)<4);
     if(!pd){pd={x:gx,y:gy,r:2,a:1};L.pud.push(pd);}
     pd.r=Math.min(pd.r+0.09,16);pd.a=1;
@@ -480,7 +480,7 @@ function drawPee(){
     ctx.fillStyle='#fff6a8';ctx.fillRect(q.x-q.r*0.4,q.y-0.5,q.r*0.35,1.5);}
   ctx.globalAlpha=1;
   const t=P.idle||0;if(state!=='play'||t<IDLE.peeStream||t>=IDLE.peeStop)return;
-  const f=P.face,sx=P.x+14-f*9,sy=P.y+P.h-7,gx=P.x+14-f*30,gy=P.y+P.h;
+  const f=P.face,sx=P.x+14-f*14,sy=P.y+P.h-7,gx=P.x+14-f*34,gy=P.y+P.h;
   const cx=sx-f*16,cy=sy-10+Math.sin(frame/3)*2;
   ctx.fillStyle='#f2d33b';
   for(let i=0;i<=14;i++){const u=i/14,ph=((frame*0.12)+u)%1;
@@ -489,7 +489,7 @@ function drawPee(){
   if(frame%4===0)for(let k=0;k<2;k++){ctx.fillRect(gx+(Math.random()*12-6),gy-2-Math.random()*5,2,2);}
   // bong bóng chữ phê
   ctx.font='bold 15px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.strokeStyle='#3b2414';ctx.lineWidth=3;
-  const tx=P.x+14+f*6,ty=P.y-12+Math.sin(frame/10)*2,msg=t<IDLE.peeStream+60?'Ahhh~':'Phê quá…';
+  const tx=P.x+14+f*6,ty=P.y-22+Math.sin(frame/10)*2,msg=t<IDLE.peeStream+60?'Ahhh~':'Phê quá…';
   ctx.strokeText(msg,tx,ty);ctx.fillText(msg,tx,ty);
 }
 
@@ -608,39 +608,52 @@ function drawEnemy(e){
 }
 function drawShroom(i){ctx.fillStyle='#f5e6c8';ctx.fillRect(i.x+8,i.y+12,10,14);ctx.fillStyle='#8e24aa';ctx.beginPath();ctx.ellipse(i.x+13,i.y+12,13,11,0,Math.PI,0);ctx.fill();
   ctx.fillStyle='#fff';ctx.fillRect(i.x+6,i.y+4,4,4);ctx.fillRect(i.x+16,i.y+2,4,4);ctx.fillStyle='#000';ctx.fillRect(i.x+10,i.y+16,2,4);ctx.fillRect(i.x+15,i.y+16,2,4);}
-// vẽ 1 cái chân có viền đậm theo toạ độ ảnh (gốc = góc trên trái sprite)
-function legPx(pts,paw){
-  const seg=(c,w)=>{ctx.fillStyle=c;for(let i=0;i<pts.length-1;i++){const [x0,y0]=pts[i],[x1,y1]=pts[i+1],n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));
-    for(let k=0;k<=n;k++){const x=Math.round(x0+(x1-x0)*k/n),y=Math.round(y0+(y1-y0)*k/n);ctx.fillRect(x-18-w/2,y-28-w/2,w,w);}}};
-  seg(DOGPAL.o,5);seg(DOGPAL.d,2);
-  const [px,py]=pts[pts.length-1];ctx.fillStyle=DOGPAL.o;ctx.fillRect(px-18-3,py-28-3,6,5);ctx.fillStyle=DOGPAL.d;ctx.fillRect(px-18-1,py-28-1,2,2);
+// ---------- LU MỚI: hình gốc vẽ bằng SpriteCook, cắt thành mảnh (thân, đuôi, lưỡi, 4 chân) để cử động ----------
+const LU={"body": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAAvCAYAAABQfMJ5AAAEbklEQVR42tWaPWhaURTHz3sqNZLEFrJInlZCNjN0CVK7CHHpIHQobp2yNdBAx0KmQMbCK8S50C10KDh0ScDJEiSQIW4hGE1w6VAbeTE8oh3Mebk+77v3vi99PeCQG9/H757/Pefcc5UgYBYLKUM739furyS7zwgHDbZ7GAd5dUvomsH5PsQLMLQLLwXFm2bYwfk+9z7k9xfSe8Kel2YBe9P8ZAtOxOTVLbj89hnWdvpccGmawH7Ami1e6HLXvTRtYL9gEfioXoXsixVj7Pj0AjbW82PgUlCBaR7rHsZtAZM2H0kZ4HJQgY/qVejpLeNzVK9SJ4I0GvB8JAXzkRT09JYRU+RpyJsF3KjoE8A9vTUBkH2xAj29xQUXCnpByNEIjh5mGcvjx6cXE2OolKlAx0LK8Gw3ypV1TtWoEkVZikiYB24e99XTf3/LQh72wmrbMdhYzxuAJKQ5ggemDKXJ0o5lihGoQQxyD+CsXB2e5TrOqRrUtmMTMmRJ2Eq+CN4tTqa1m8s+KJuKUaPLQfIuSpS1LjfW8xMTZZX28KNs3hn3j4WUYXgaHs0UI8y1jP8nJUqL4ghsvh+rsPmRfw0AAG+qP0fXqT5XZLGQMkSv4IsiMClt2qSYozoAwNluFJIvnziq5rCiixe604M2pykrYK9jBrl0MsWI/9BWe2dyIvyCNgdLfE680PW3OCGBy8tzUF6eo65lnlSd5HPaNTgW9qufdbYbNQoU2vq0s9PKqRrUQHw5kHGDvB7/dgVNNgWsNhrtX3djY+XlOWp+tkphOVWDUjIBObUzGgP+dQhHZgAsWrT7K0miRVhyprX7K8ltmwfXFsr7/fWtcCDDa0vJBAAAHLQ7tio6LHbI/XSYlVNHM60Myaad285HNh2FMhHBaXmcWl6qHSglEwY8y3gTI7FSCwDA4tIAnr/76BoWPXby6tnIA82+K4/zoFmelng51auUQko8m446Ah/V0KMYUUom4KDdsZwEs7cte2S4djGAsHpSswKnFR4s7x+0O2LdUPS6H4WDCLiT1GQH3BLaay+Lgtut2JyAh0XrZS/tMSJrUH6I6Nl0FE7SUThu9sfyeKOiw+LSQKgTA0E/wCPB4frW8DqZ0sjqjgReXBrA2k7f8bOlaa5nnjxJuaPksZixqtawyqvKT7nP+tqsB6NHlilGoFHRHyFMXgcAOCHWPVlq4v74vzyfRlVhXY3wpWQC8oM/Y973wmYub9aWkLc7IyXu6lCetQGZFTxtF4UpFeVtB1r28+XcSh4/Vq0meXWLu7317SzLL3CrAgXz9kJ6z9FGSKadBOA6EYFx2hVxY2s7fePdnEx4oJr9IkpCaZOtILs/q5K9kq5fEqfdt7YdM+Cd/I5MtjrsImVrBWQeb1R0zybJzr2mJm/WC+ELi4BZ2dsvLW4sceJlWxUZ7QVFuprcfEs5ZeRdMzNPk4HEa8upGnz/kLKcZLdbX5n1Q1MeEMorp2qO4UXTomiv3LcNh3k9mdOIV95mnn2pzu/9D2+YFw2arYGvAAAAAElFTkSuQmCC", "x": 1, "y": 0}, "bodyClosed": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAAvCAYAAABQfMJ5AAAEL0lEQVR42s2aP2gTURzHf3e94DXYRqFLaFKDdEsHFwmeS4YuHbJJNic3CwYchU6FjsIJzSy4FQcha4VOkVIKDs1WJG0sWRw8K9dIMHGIv8vL9f29f7kHHXrJ3bvP+37f7/d770WDlLXsQmGs8n3373dNtQ8jbbDOYQ709W2pe0bn+5DbhLEqvJYWNf2wo/N94XPI7y+V9qSV1+YBe919owQn0/T1bbj48BY2dgZCcC1J4Dhg/S236QjnvZE0cFywCOwc5ijXYUyCa2kFpilGAxIBk58juJFWYLpifDDe4DmHOU9xPQl784A7raE02OTFHSV30D7TIQUNwWWU5IHjZ+QfbWoYcVr7bNcU2tqyXWg3skxV/IPAU1M07xNR+tcPXUph3ov7lWNBtRtZob0TCWRhmmrAKtcy0AY2OJmyjHnOY5q1w7RyLQNO7fZgXV8MoPCi4NXoqVIaLSrKtzIDRVO83ciCZRfGelKRmXetXMtMLcqZmwiM35cB/lTdgk/VrZl+tLiLE1QFO0Rg0tp+CLS+v53tmlB8cieQymRKSwyalaZEqoWNGaS1y7VM/NCstTM5EHFB+4Ml9pPbdOLL09mFwpgEbq4uQnN1kTqXRVZl5fOgscSIaz/rbNf0ChTa/FRZLFi2C22Qnw5k3CDvx/9DQZObAqyFRu/Ln5lrzdVF6fw8STEu1It5sOz+5BqI70O4zydH02uPq16RotEirL90C7vNg3ML7f3y6kY6kOG99WIeAAAOen2pPn8PLwEA4PjrN6g8egh3M2v0MrTTGs68BCZzctMu7M5HpWRCk4jg/j5Z5aVl96FezHvwvCYaGI2XWgAAlldG8OD569CwqNjp0/sTBbqDUIqLoHlKa6KcGlVKIS1eKZmBwCc19CRG1It5OOj1mYPgV5u5R4ZzFwOI6konCXBa4cFT/6DXv7UbqvEqqTgKBxnwIKlJBZwJHbXKsuCqFVsQcEO2Xo6yTSOyC83/Eb1SMuG0ZMJxdzCTxzutISyvjKR2YiDtB3gkOFzdeKqTKY2s7kjg5ZURbOwMAvetJTmfRfYk7Y6Wx2KGVa1hlXek3xP29b57ko49snItA53WcArhUx0A4JSY92SpKdoHT/X5NLoK62qErxfzUB39nFE/ijZ3e/OWhKLVGWnxUIfyvAXIvOBpqyhMqWhvFWg9zpcLa3n8Y2016evbwuVtbCcccYGzChTM20ulvUALIZ12EoDzRAYm6K5ImLaxM/DeLciAp+LUUsVJaG1yK0j1Z1V6VNaNy+K057YbWQ8+yO/IdNZhF2lbFpD/eqc1jGyQVJ6VmL15L4QvLAPGas/eXQpjSRCVlSoy2gvK7GoK8y3llFF0z9yUJgNJ1M2yXfj4ao05yGGXvjrvh6YiILSXZbuB4WXTYpRn2UZQJcj55E8jUanNPfuygz/7Hx9yAPnV8tH8AAAAAElFTkSuQmCC", "x": 1, "y": 0}, "bodyX": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAAvCAYAAABQfMJ5AAAENElEQVR42s2aPWgbMRTH311s6pgmbiGLiZ2aks0ZuhTT6+IhSwZvxVunbg3U0LGQKZCxcIV4LnQLHQJeU8jkEkKgQ7yF4sQJXjrUTbk4mNgd3HeWFX3dh84n6FDFd9JP76/3np7OgJi19Fxu5OX3zt2l4XWMRNxgewcZMFc3lZ4Znu1CZh1GXuGNuFiThh2e7UrfQ/5+obCjbHljFrDX7Q+e4FSauboJ518+wtpWXwpuRAmsA5ZumfWedN8nogbWBYvAvYMMox9GJLgRV2CWxVhANDAfvOdaPBFXYN7EReC4MOTvcPHG/WOLm1HIWwTcagy4FlPpF4FznV4cYjSCkxYiJ87rV7U4rQ5Tp7RPt1NSWVu2I9zTKpKW7fFILf3nl6lk4SBSxdaspYXKiMyRBW30xEUWL1aS0IRp8Njl3q3GACzbgWYtreSlVcF7lft/vz7vQ+7NLaTnciPn7tKIlaVRojwwBGctlEqcb9bSYNm5kRmVZxb1FSvJiUSJvckCadbS7u9VgPfLG7Bf3pgax9CdnKBVcEAEJqVNQ6D06Xa6nYL8iwe+rEwqJTJoOkzxgMP2GaS0i5Wkfmje2ZlcCF3QtLPEcTLrPb3JCQlcX56H+vI8cy/LpKoSz734koSuetbpdspNUHhZl+retGwHmqC+HUi/QT6P/w8ETRYFeAeNzvfbqb768jw3PrNDjAPVfBYsuzvuA/lzCPft+HDS97zsFhQMloelz6BByzy4t1Deb69ulB0ZPlvNZwEAYK/TVRrz7+ACAACOfvyE0rOn8DC5wk5DW43B1CQwmJNFu6CVj1IhBXXCg9Nj8tJLy+5CNZ914UVNtjCGKLQAACwuDeHJ6/eBYdFiJy8fjy3Q7geyuAxaZGlDFlPDCimkxEuFlC9wzKEBAKr5LOx1utxFoK3NrZHh3kUH4uccqxuclXiIrL/X6d6rhhqiTEpH4qAC7ic0eQHnQodtZVVwrxmbH/CEar4cZpt4ZAfq/z16qZCCk0IKjtr9qTjeagxgcWmoVImBuF/gkeBwdeNanQxpZHZHAi8uDWFtq+97bCPK/SyTJyl3lDwmM7xsDbO8Q/ORdKzP7eN41MiKlSS0GoMJBGV1AIATYt+TqaZq0TCW99OoKsyrEb6az0J5+HvK+mG0mctbdCSUnc5IiQe6lBcdQGYFzzpF0XdVXqBNnZMLKnn8xys1maub0uOttrssXeC8BAXj9kJhx9dByGTd2uM+UYHxWxUJ0ta2+u7c/Cx4LG4tvSgJpU2Wgrx+VmWGJV1dEme9t1lLu/B+viMzeR+kkbLlAdH9rcYgtEXy8q7I5C2aEE5YBYzXXn26kPoSP1b2lJGxJqhS1ZTGW8Yto+yZmVmadCRhN8t24Ou7Fe4iBz36mqIPTWVAKC/LdnzDq4ZF1Vq5tgMHvZ/oMBKWtYV3X7b/d/8DyVQfCoXJkA8AAAAASUVORK5CYII=", "x": 1, "y": 0}, "tail": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAA20lEQVR42q2TsQ6CMBCG/0Jdmpi+AIMDm2/AzOrmWzCw+wDumPgkrMy8ARuDMbxAY9KQINbBHAK2A8Sb2ku+7y53LYMjhB8YW173DRvfmQt83E5W8XZ3nkjYHCbwVV+tAi9MJhK2BB6HjBV03zBOsCqkE67ybjjvDxsAgCokZAzDx6254CjT30QGlKkYRFz4gSlTYW2zyjscL3fovp3MKsoCU+LDeJScVye4frbMtkrqiruGFGX6p7JN5GFl0BpXC4bh/00w3jXt2fUf6O0IPzB8aUWSqkLCCxO8AX+gZBaouvykAAAAAElFTkSuQmCC", "x": 0, "y": 8}, "tongue": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAMCAYAAAC0qUeeAAAAh0lEQVR42mPY5Zz6H4YZGBgYYDQ2wARjWJrJMXyubMargclt72xGZAFLMzkGmAaYZhST3fbOZjx+6hGGBgYGBgZkDXBnYNMA48M0MDGQAMhTzMUs8z/gwHYGbJ6FydPOGYzoAlzMMv9flqWjiIl3zWT49vcJIyM2E7iYZVAi49vfJ4wMDAwMABzrOCGwSs6kAAAAAElFTkSuQmCC", "x": 49, "y": 24}, "L1": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAFCAYAAAB4ka1VAAAAUElEQVR42mPkYpb5fyyfiwEZhEx6xPDsvwjDt79PGJkYsIA1eXJwNguyhLYvK5z90Zefgd+F4T+Kgqubf2OYxsjAwMDAxSzzH5tV3/4+YQQAKVkT5DdKNlIAAAAASUVORK5CYII=", "x": 8, "y": 47}, "L2": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAECAYAAACzzX7wAAAAO0lEQVR42mPkYpb5fyyfiwEdWE38xvDt7xNGJgYc4Fg+FwMXs8x/nApggJGBgYGBi1nmPzbJb3+fMAIA3xcNbnXMi70AAAAASUVORK5CYII=", "x": 17, "y": 47}, "L3": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAFCAYAAAB4ka1VAAAAUUlEQVR42mPkYpb5fyyfi0Hbl5UBBq5u/s1gNfEbw7e/TxiZGLAAZMVMyLqQwcc9/AxczDL/GRkYGBhg1qADq4nfGBhhHC5mmf/oCr79fcIIAHbuGBR1Gxh0AAAAAElFTkSuQmCC", "x": 32, "y": 47}, "L4": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAECAYAAACzzX7wAAAAT0lEQVR42mPkYpb5fyyfi4GBgYFB25eVAQb4XT4yfPv7hJGJAQlc3fwbzv64h5+Bi1nmPyMDAwMDsinIwGriNwZGGIeLWeY/uoJvf58wAgChjxSVey3UJgAAAABJRU5ErkJggg==", "x": 41, "y": 47}, "W": 62, "H": 52};
+for(const k in LU)if(LU[k]&&LU[k].src){const im=new Image();im.src=LU[k].src;LU[k].img=im;}
+const LUS=0.72; // tỉ lệ vẽ (ảnh gốc 62x52 ô)
+const LU_PIV={tail:[6,22],L1:[11,47],L2:[20,47],L3:[35,47],L4:[44,47],tongue:[51,25]};
+function luPart(n,rot){const p=LU[n];if(!p||!p.img.complete)return;
+  if(!rot){ctx.drawImage(p.img,p.x,p.y);return;}
+  const pv=LU_PIV[n];ctx.save();ctx.translate(pv[0],pv[1]);ctx.rotate(rot);ctx.drawImage(p.img,p.x-pv[0],p.y-pv[1]);ctx.restore();}
+// chân sau dài (gảy đầu / nhấc chân tè), toạ độ theo ô ảnh gốc
+function luLeg(pts){
+  const seg=(c,w)=>{ctx.fillStyle=c;for(let i=0;i<pts.length-1;i++){const [x0,y0]=pts[i],[x1,y1]=pts[i+1],n=Math.ceil(Math.max(Math.abs(x1-x0),Math.abs(y1-y0)));
+    for(let k=0;k<=n;k++)ctx.fillRect(Math.round(x0+(x1-x0)*k/n-w/2),Math.round(y0+(y1-y0)*k/n-w/2),w,w);}};
+  seg('#0a031c',8);seg('#d07226',6);seg('#fbbf2b',3);
+  const [px,py]=pts[pts.length-1];ctx.fillStyle='#0a031c';ctx.fillRect(px-5,py-4,10,9);ctx.fillStyle='#d07226';ctx.fillRect(px-4,py-3,8,7);
+  ctx.fillStyle='#fbbf2b';ctx.fillRect(px-2,py-2,4,3);
 }
 function drawDog(x,y,face,dead){
-  ctx.imageSmoothingEnabled=false;
-  const troll=P.rev>0||P.swap>0||L.mirror>0;let img,jx=0,rot=0;
+  const troll=P.rev>0||P.swap>0||L.mirror>0,t=frame;
   const pose=dead?null:idlePose();
-  if(dead)img=DOGF.dead;
-  else if(!P.on)img=(P.vy*P.gd<0)?DOGF.jump:DOGF.fall;
-  else if(P.vx!==0){const a=troll?DOGF.dizzyRun:DOGF.run;img=a[Math.floor(frame/5)%4];}
-  else if(pose==='scratch'){img=DOGF.scratch[Math.floor(frame/3)%2];jx=(Math.floor(frame/3)%2)?1:-1;rot=-0.16;}
-  else if(pose==='pee'){const t=P.idle;img=DOGF.pee[Math.floor(frame/10)%2];
-    if(t<IDLE.peeStream)rot=-0.06*((t-IDLE.peeA)/(IDLE.peeStream-IDLE.peeA));else rot=-0.06;
-    if(t>=IDLE.peeStop){jx=(frame%4<2)?2:-2;rot=0;} // rũ rũ người cho ráo
-  }
-  else{const a=troll?DOGF.dizzyIdle:DOGF.idle;img=a[Math.floor(frame/14)%2];}
-  const bob=(!dead&&P.on&&P.vx!==0&&Math.floor(frame/5)%4===2)?-2:0;
+  let st='idle';
+  if(dead)st='dead';else if(!P.on)st=(P.vy*P.gd<0)?'jump':'fall';else if(P.vx!==0)st='run';else if(pose)st=pose;
+  let body='body',rot=0,jx=0,bob=0,tail=Math.sin(t/7)*0.3,tg=Math.sin(t/14)*0.18,lg=[0,0,0,0],hide1=false,legFront=null,legBack=null;
+  if(st==='run'){const s=Math.sin(t/3);lg=[s*0.75,-s*0.75,-s*0.75,s*0.75];bob=-Math.abs(Math.cos(t/3))*4;tail=Math.sin(t/2)*0.5;tg=Math.sin(t/2.5)*0.4;}
+  else if(st==='jump'){lg=[0.7,0.6,-0.6,-0.7];tg=-0.35;tail=-0.3;}
+  else if(st==='fall'){lg=[-0.3,-0.2,0.25,0.35];tg=0.35;tail=0.4;}
+  else if(st==='dead'){body='bodyX';const w=Math.sin(t/2)*0.3;lg=[1+w,-0.8-w,0.9-w,-1+w];tg=0.5;tail=0.6;}
+  else if(st==='scratch'){body='bodyClosed';hide1=true;rot=-0.13;tail=Math.sin(t/1.6)*0.55;
+    const up=Math.floor(t/3)%2;jx=up?0.6:-0.6;legFront=[[13,43],[22,47],[28,up?15:20]];}
+  else if(st==='pee'){body='bodyClosed';hide1=true;const k=Math.min(1,(P.idle-IDLE.peeA)/(IDLE.peeStream-IDLE.peeA));
+    rot=-0.05*k;tail=0.25+Math.sin(t/9)*0.1;legBack=[[13,42],[13-9*k,41-7*k],[12-17*k,44-23*k]];
+    if(P.idle>=IDLE.peeStop){jx=(t%4<2)?2:-2;rot=0;tail=Math.sin(t)*0.6;}}
+  if(troll&&!dead)rot+=Math.sin(t/5)*0.1;
   const sq=P.land>0?P.land*0.035:0;
-  ctx.save();ctx.translate(x+14+jx,y+28);
+  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.translate(x+14+jx,y+28);
   if(face<0)ctx.scale(-1,1);
-  if(dead!==(P.gd<0)){ctx.translate(0,-14);ctx.scale(1,-1);ctx.translate(0,14);}
-  ctx.scale(1+sq,1-sq);
-  if(rot){ctx.translate(-10,0);ctx.rotate(rot);ctx.translate(10,0);}
-  ctx.drawImage(img,-18,-28+bob);
-  if(pose==='scratch'){const up=Math.floor(frame/3)%2;legPx([[8,20],[15,24],[20,up?6:9]]);}
-  if(pose==='pee'&&!dead){const t=P.idle,k=Math.min(1,(t-IDLE.peeA)/(IDLE.peeStream-IDLE.peeA));
-    legPx([[8,20],[8-4*k,20-6*k],[8-5*k,21-15*k]]);}
+  if(dead!==(P.gd<0)){ctx.translate(0,-18);ctx.scale(1,-1);ctx.translate(0,18);}
+  ctx.scale((1+sq)*LUS,(1-sq)*LUS);ctx.translate(0,bob);
+  if(rot){ctx.translate(-20,0);ctx.rotate(rot);ctx.translate(20,0);}
+  ctx.translate(-31,-52);
+  if(legBack)luLeg(legBack);
+  luPart('L2',lg[1]);luPart('L4',lg[3]);if(!hide1)luPart('L1',lg[0]);luPart('L3',lg[2]);
+  luPart('tail',tail);luPart(body,0);luPart('tongue',tg);
+  if(legFront)luLeg(legFront);
   ctx.restore();
-  if(pose==='scratch'&&frame%9===0)spawnFx('dust',x+(face>0?22:6),y+4,{scale:0.35,flip:face<0});
+  if(st==='scratch'&&t%9===0)spawnFx('dust',x+14-face*1,y+2,{scale:0.35,flip:face<0});
 }
 function drawFlag(x,big,col,dy=0){
   const top=(big?200:330)+dy;ctx.fillStyle='#ddd';ctx.fillRect(x,top,5,(big?200:70));ctx.fillStyle='#ffd54f';ctx.beginPath();ctx.arc(x+2.5,top,6,0,7);ctx.fill();
