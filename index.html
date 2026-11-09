@@ -222,7 +222,8 @@ let lvl=0,L,P,camX=0,deaths=0,bones=0,cpX=60,state='title',deadT=0,cause='',fram
 function build(){
   L=LEVELS[lvl]();
   L.fx=[];L.items=[];L.hint='';L.hintT=-999;L.toast={text:'',n:0};L.flag.run=false;L.mirror=0;L.fakeEnd=false;
-  FXL=[];P={land:0,x:cpX,y:300,w:28,h:28,vx:0,vy:0,on:false,face:1,st:null,rev:0,swap:0,spr:false,gd:1,slip:false};
+  FXL=[];P={idle:0,land:0,x:cpX,y:300,w:28,h:28,vx:0,vy:0,on:false,face:1,st:null,rev:0,swap:0,spr:false,gd:1,slip:false};
+  L.pud=[];
   if(state!=='title')state='play';
 }
 function nextLevel(){lvl++;cpX=60;lvDeaths=0;build();}
@@ -298,6 +299,7 @@ function update(){
     else if(P.vy<0){P.y=o.y+o.h;P.vy=0;if(gd<0){P.on=true;P.st=o;}else bump(o);}
   }
   if(P.on&&!wasOn&&vyIn*gd>5){P.land=6;if(gd>0)spawnFx('land',P.x+14,P.y+28);}
+  updIdle(dx,kj);
   if(P.on&&gd>0&&P.vx!==0&&frame%12===0)spawnFx('dust',P.x+(P.vx>0?6:22),P.y+28,{flip:P.vx<0,scale:P.slip?1.2:0.8});
   const st=P.st;
   if(st){
@@ -420,7 +422,21 @@ function dogGrid(legs,tail,eye,tongue){
   LEGS[legs].forEach((s,i)=>{g[11+i]=s.split('');});
   if(eye==='closed'){g[3][12]='k';g[3][13]='k';}
   if(eye==='dizzy'){g[3][13]='w';g[3][12]='k';g[2][13]='k';}
-  if(tongue){g[6][16]='p';g[7][16]='p';}
+  if(!eye||eye==='derp'){ // mắt lồi ngơ ngác + răng hô: nhìn bựa
+    g[3][12]='w';g[3][13]='k';g[2][12]='w';g[2][13]='w';g[5][16]='w';}
+  if(tongue===true){g[6][16]='p';g[7][16]='p';}
+  if(tongue==='lol'||tongue==='lol2'){ // lưỡi thè dài lủng lẳng, đung đưa
+    g[6][15]='p';g[6][16]='p';g[7][16]='p';g[8][tongue==='lol'?16:17]='p';}
+  return g;
+}
+// chân sau gảy đầu (vẽ thêm lên lưới): từ hông vòng lên tai
+function scratchLeg(g){
+  ['......od..od.od...','......od..od.od...','......oo..oo.oo...'].forEach((s,i)=>{g[11+i]=s.split('');});
+  return g;
+}
+// đứng 3 chân, chân sau giơ lên ra sau để tè
+function peeLeg(g){
+  ['......od..od.od...','......od..od.od...','......oo..oo.oo...'].forEach((s,i)=>{g[11+i]=s.split('');});
   return g;
 }
 function bakeDog(g){
@@ -429,13 +445,53 @@ function bakeDog(g){
   return c;
 }
 const DOGF={
-  idle:[bakeDog(dogGrid('stand',0)),bakeDog(dogGrid('stand',1))],
-  run:[bakeDog(dogGrid('runA',1)),bakeDog(dogGrid('stand',0)),bakeDog(dogGrid('runB',1)),bakeDog(dogGrid('stand',0))],
-  jump:bakeDog(dogGrid('jump',0)),fall:bakeDog(dogGrid('stand',1)),
-  dizzyIdle:[bakeDog(dogGrid('stand',0,'dizzy')),bakeDog(dogGrid('stand',1,'dizzy'))],
-  dizzyRun:[bakeDog(dogGrid('runA',1,'dizzy')),bakeDog(dogGrid('stand',0,'dizzy')),bakeDog(dogGrid('runB',1,'dizzy')),bakeDog(dogGrid('stand',0,'dizzy'))],
+  idle:[bakeDog(dogGrid('stand',0,'derp','lol')),bakeDog(dogGrid('stand',1,'derp','lol2'))],
+  run:[bakeDog(dogGrid('runA',1,'derp','lol2')),bakeDog(dogGrid('stand',0,'derp','lol')),bakeDog(dogGrid('runB',1,'derp','lol2')),bakeDog(dogGrid('stand',0,'derp','lol'))],
+  jump:bakeDog(dogGrid('jump',0,'derp','lol2')),fall:bakeDog(dogGrid('stand',1,'derp','lol')),
+  dizzyIdle:[bakeDog(dogGrid('stand',0,'dizzy','lol')),bakeDog(dogGrid('stand',1,'dizzy','lol2'))],
+  dizzyRun:[bakeDog(dogGrid('runA',1,'dizzy','lol2')),bakeDog(dogGrid('stand',0,'dizzy','lol')),bakeDog(dogGrid('runB',1,'dizzy','lol2')),bakeDog(dogGrid('stand',0,'dizzy','lol'))],
+  scratch:[bakeDog(scratchLeg(dogGrid('stand',0,'closed','lol'))),bakeDog(scratchLeg(dogGrid('stand',1,'closed','lol2')))],
+  pee:[bakeDog(peeLeg(dogGrid('stand',0,'closed','lol'))),bakeDog(peeLeg(dogGrid('stand',1,'closed','lol2')))],
   dead:bakeDog(dogGrid('jump',1,'closed',true))
 };
+// ---------- LU ĐỨNG YÊN LÀM TRÒ (tính theo khung hình, 60 khung ≈ 1 giây) ----------
+const IDLE={scratchA:90,scratchB:200,peeA:420,peeStream:440,peeStop:580,peeB:600,loop:660};
+function idlePose(){const t=P.idle||0;
+  if(t>=IDLE.scratchA&&t<IDLE.scratchB)return 'scratch';
+  if(t>=IDLE.peeA&&t<IDLE.peeB)return 'pee';
+  return null;}
+function updIdle(dx,kj){
+  if(state==='play'&&P.on&&P.vx===0&&!dx&&!kj&&P.gd>0&&!trollActive()){
+    P.idle=(P.idle||0)+1;if(P.idle>=IDLE.loop)P.idle=1;
+  }else P.idle=0;
+  const t=P.idle;
+  if(t>=IDLE.scratchA&&t<IDLE.scratchB&&t%7===0&&AC)noise(AC.currentTime,0.035,0.025);
+  if(t===IDLE.peeStream&&AC)noise(AC.currentTime,(IDLE.peeStop-IDLE.peeStream)/60,0.035);
+  if(t>=IDLE.peeStream&&t<IDLE.peeStop){
+    const gx=P.x+14-P.face*30,gy=P.y+P.h;
+    let pd=L.pud.find(q=>Math.abs(q.x-gx)<8&&Math.abs(q.y-gy)<4);
+    if(!pd){pd={x:gx,y:gy,r:2,a:1};L.pud.push(pd);}
+    pd.r=Math.min(pd.r+0.09,16);pd.a=1;
+  }
+}
+function drawPee(){
+  for(const q of L.pud){ctx.globalAlpha=q.a*0.75;ctx.fillStyle='#f2d33b';
+    ctx.beginPath();ctx.ellipse(q.x,q.y+1,q.r,q.r*0.28,0,0,7);ctx.fill();
+    ctx.fillStyle='#fff6a8';ctx.fillRect(q.x-q.r*0.4,q.y-0.5,q.r*0.35,1.5);}
+  ctx.globalAlpha=1;
+  const t=P.idle||0;if(state!=='play'||t<IDLE.peeStream||t>=IDLE.peeStop)return;
+  const f=P.face,sx=P.x+14-f*9,sy=P.y+P.h-7,gx=P.x+14-f*30,gy=P.y+P.h;
+  const cx=sx-f*16,cy=sy-10+Math.sin(frame/3)*2;
+  ctx.fillStyle='#f2d33b';
+  for(let i=0;i<=14;i++){const u=i/14,ph=((frame*0.12)+u)%1;
+    const x=(1-u)*(1-u)*sx+2*(1-u)*u*cx+u*u*gx,y=(1-u)*(1-u)*sy+2*(1-u)*u*cy+u*u*gy;
+    ctx.fillRect(Math.round(x)-1,Math.round(y)-1,ph<0.75?3:2,ph<0.75?3:2);}
+  if(frame%4===0)for(let k=0;k<2;k++){ctx.fillRect(gx+(Math.random()*12-6),gy-2-Math.random()*5,2,2);}
+  // bong bóng chữ phê
+  ctx.font='bold 15px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.strokeStyle='#3b2414';ctx.lineWidth=3;
+  const tx=P.x+14+f*6,ty=P.y-12+Math.sin(frame/10)*2,msg=t<IDLE.peeStream+60?'Ahhh~':'Phê quá…';
+  ctx.strokeText(msg,tx,ty);ctx.fillText(msg,tx,ty);
+}
 
 // ---------- HIỆU ỨNG PIXELFX (sprite sheet) ----------
 const FXIMG={};for(const k in SHEETS){const im=new Image();im.src=SHEETS[k].src;FXIMG[k]=im;}
@@ -552,21 +608,39 @@ function drawEnemy(e){
 }
 function drawShroom(i){ctx.fillStyle='#f5e6c8';ctx.fillRect(i.x+8,i.y+12,10,14);ctx.fillStyle='#8e24aa';ctx.beginPath();ctx.ellipse(i.x+13,i.y+12,13,11,0,Math.PI,0);ctx.fill();
   ctx.fillStyle='#fff';ctx.fillRect(i.x+6,i.y+4,4,4);ctx.fillRect(i.x+16,i.y+2,4,4);ctx.fillStyle='#000';ctx.fillRect(i.x+10,i.y+16,2,4);ctx.fillRect(i.x+15,i.y+16,2,4);}
+// vẽ 1 cái chân có viền đậm theo toạ độ ảnh (gốc = góc trên trái sprite)
+function legPx(pts,paw){
+  const seg=(c,w)=>{ctx.fillStyle=c;for(let i=0;i<pts.length-1;i++){const [x0,y0]=pts[i],[x1,y1]=pts[i+1],n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));
+    for(let k=0;k<=n;k++){const x=Math.round(x0+(x1-x0)*k/n),y=Math.round(y0+(y1-y0)*k/n);ctx.fillRect(x-18-w/2,y-28-w/2,w,w);}}};
+  seg(DOGPAL.o,5);seg(DOGPAL.d,2);
+  const [px,py]=pts[pts.length-1];ctx.fillStyle=DOGPAL.o;ctx.fillRect(px-18-3,py-28-3,6,5);ctx.fillStyle=DOGPAL.d;ctx.fillRect(px-18-1,py-28-1,2,2);
+}
 function drawDog(x,y,face,dead){
   ctx.imageSmoothingEnabled=false;
-  const troll=P.rev>0||P.swap>0||L.mirror>0;let img;
+  const troll=P.rev>0||P.swap>0||L.mirror>0;let img,jx=0,rot=0;
+  const pose=dead?null:idlePose();
   if(dead)img=DOGF.dead;
   else if(!P.on)img=(P.vy*P.gd<0)?DOGF.jump:DOGF.fall;
   else if(P.vx!==0){const a=troll?DOGF.dizzyRun:DOGF.run;img=a[Math.floor(frame/5)%4];}
+  else if(pose==='scratch'){img=DOGF.scratch[Math.floor(frame/3)%2];jx=(Math.floor(frame/3)%2)?1:-1;rot=-0.16;}
+  else if(pose==='pee'){const t=P.idle;img=DOGF.pee[Math.floor(frame/10)%2];
+    if(t<IDLE.peeStream)rot=-0.06*((t-IDLE.peeA)/(IDLE.peeStream-IDLE.peeA));else rot=-0.06;
+    if(t>=IDLE.peeStop){jx=(frame%4<2)?2:-2;rot=0;} // rũ rũ người cho ráo
+  }
   else{const a=troll?DOGF.dizzyIdle:DOGF.idle;img=a[Math.floor(frame/14)%2];}
   const bob=(!dead&&P.on&&P.vx!==0&&Math.floor(frame/5)%4===2)?-2:0;
   const sq=P.land>0?P.land*0.035:0;
-  ctx.save();ctx.translate(x+14,y+28);
+  ctx.save();ctx.translate(x+14+jx,y+28);
   if(face<0)ctx.scale(-1,1);
   if(dead!==(P.gd<0)){ctx.translate(0,-14);ctx.scale(1,-1);ctx.translate(0,14);}
   ctx.scale(1+sq,1-sq);
+  if(rot){ctx.translate(-10,0);ctx.rotate(rot);ctx.translate(10,0);}
   ctx.drawImage(img,-18,-28+bob);
+  if(pose==='scratch'){const up=Math.floor(frame/3)%2;legPx([[8,20],[15,24],[20,up?6:9]]);}
+  if(pose==='pee'&&!dead){const t=P.idle,k=Math.min(1,(t-IDLE.peeA)/(IDLE.peeStream-IDLE.peeA));
+    legPx([[8,20],[8-4*k,20-6*k],[8-5*k,21-15*k]]);}
   ctx.restore();
+  if(pose==='scratch'&&frame%9===0)spawnFx('dust',x+(face>0?22:6),y+4,{scale:0.35,flip:face<0});
 }
 function drawFlag(x,big,col,dy=0){
   const top=(big?200:330)+dy;ctx.fillStyle='#ddd';ctx.fillRect(x,top,5,(big?200:70));ctx.fillStyle='#ffd54f';ctx.beginPath();ctx.arc(x+2.5,top,6,0,7);ctx.fill();
@@ -602,6 +676,7 @@ function draw(){
   drawFlag(L.flag.x,true);
   if(L.flag.run&&L.flag.x<L.flag.to){ctx.fillStyle='#b9772f';const s=Math.floor(frame/4)%2;ctx.fillRect(L.flag.x-6+s*4,392,5,8);ctx.fillRect(L.flag.x+6-s*4,392,5,8);}
   for(const f of L.fx){ctx.globalAlpha=1-f.t/40;drawBone(f.x+8,f.y-f.t*1.5,f.t/5);ctx.globalAlpha=1;}
+  drawPee();
   drawDog(P.x,P.y,P.face,state==='dead');
   drawFx();
   if(L.dark){const a=L.dark,cx=P.x+14,inZ=cx>a.a&&cx<a.b;
