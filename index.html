@@ -140,8 +140,7 @@ body.intitle #joy,body.intitle #joyz,body.intitle #rgt{display:none!important}
 <div class="bx">
   <div class="kick">VTA GAMES GIỚI THIỆU</div>
   <h1 aria-label="Lu Troll"><b style="--k:0">L</b><b style="--k:1">U</b><span class="sp"></span><b class="o" style="--k:2">T</b><b class="o" style="--k:3">R</b><b class="o" style="--k:4">O</b><b class="o" style="--k:5">L</b><b class="o" style="--k:6">L</b></h1>
-  <div class="rib">🐶 Chú chó bựa nhất miền Tây</div>
-  <div class="sub">10 màn · bẫy khắp nơi · có phép sấm sét ⚡<br>Đừng tin cái gì hết! 😝</div>
+  <div class="sub">Đừng tin cái gì hết! 😝</div>
   <button class="go" id="goBtn">▶ CHƠI THÔI!</button>
   <div class="tease" id="goTease"></div>
 </div>
@@ -1638,7 +1637,7 @@ function draw(){
     ctx.fillStyle='rgba(0,0,0,.55)';rr(W/2-tw/2,80,tw,40,12);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(L.toast.text,W/2,108);}
   if(L.fakeEnd&&state==='play')winBox();
   if(state==='dead')centerBox(['Gâu! Chết rồi 😵',MSG[cause]||MSG.pit],'Màn này chết '+lvDeaths+' lần · tổng '+deaths);
-  if(state==='title'&&document.getElementById('ttl').style.display==='none')centerBox(['🐶 LU TROLL','10 màn · bẫy khắp nơi',"Đừng tin cái gì hết!"],'Bấm nút nhảy ⤒ (hoặc Space) để bắt đầu · có nhạc 🎵');
+  if(state==='title'&&document.getElementById('ttl').style.display==='none')centerBox(['🐶 LU TROLL',"Đừng tin cái gì hết!"],'Bấm nút nhảy ⤒ (hoặc Space) để bắt đầu · có nhạc 🎵');
   if(state==='clear')centerBox(['✅ Qua '+L.name.split(' –')[0]+'!','Chết '+lvDeaths+' lần. Chưa là gì đâu…',L.nextTxt],'Bấm nhảy để vô màn tiếp');
   if(state==='win')winBox();
   ctx.textAlign='left';ctx.font='11px system-ui';ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillText('© Võ Thái Anh',10,H-8);
