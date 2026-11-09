@@ -1,0 +1,64 @@
+# Tự đóng gói game thành file APK cho Android mỗi khi cập nhật game.
+# Tải về ở: Releases → "Lu Troll APK" → Lu-Troll.apk
+name: Đóng gói APK
+
+on:
+  push:
+    branches: [main]
+    paths: ['index.html', 'art/**', 'android-build/**', '.github/workflows/apk.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Tạo dự án Android bằng Capacitor
+        run: |
+          mkdir app && cd app
+          npm init -y > /dev/null
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          mkdir www && cp ../index.html www/index.html
+          npx cap init "Lu Troll" vn.vtagames.lutroll --web-dir=www
+          npx cap add android
+          npx cap sync android
+
+      - name: Xoay ngang, toàn màn hình, icon con Lu
+        run: |
+          pip install --quiet pillow
+          python3 android-build/patch.py app/android
+
+      - name: Build APK
+        run: |
+          mkdir -p ~/.android && cp android-build/debug.keystore ~/.android/debug.keystore
+          cd app/android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/Lu-Troll.apk"
+
+      - name: Đăng lên Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk
+          name: Lu Troll APK (bản mới nhất)
+          body: |
+            Bản APK mới nhất của **Lu Troll** · VTA Games · © Võ Thái Anh
+            Tải file **Lu-Troll.apk** bên dưới về điện thoại Android rồi mở ra cài (cho phép "cài từ nguồn không xác định").
+            Bản build từ commit ${{ github.sha }}.
+          files: Lu-Troll.apk
+          make_latest: true
