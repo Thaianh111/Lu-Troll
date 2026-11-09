@@ -6,9 +6,10 @@
 - Game platformer troll kiểu Syobon Action ("con mèo trắng"): mỗi màn toàn bẫy bất ngờ.
 - Nhân vật chính: **Lu**, chú chó vàng, vòng cổ đỏ có chuông (chó là biểu tượng của tác giả).
 - Hướng thiết kế màn: màn 1 chỉ để khởi động, màn 2 có 10 bẫy, mỗi màn sau troll hơn màn trước
-  (hiện có 4 màn: 1 Khởi động · 2 Đập máy · 3 Đổi luật · 4 Hết tin nổi)
+  (hiện có 5 màn: 1 Khởi động · 2 Đập máy · 3 Đổi luật · 4 Hết tin nổi · 5 Sấm sét)
+- Màn 5: Lu nhặt phép **sấm sét** (biến `zapHave`, nút ⚡ `#bd`, phím X/Shift/K): lướt ngang 9 khung, trên không lướt 1 lần, xuyên `egate`, diệt quái, chớp sáng vùng tối. Câu đố: hố rộng (nhảy + lướt ở đỉnh), cổng giả `fgate`, cột thu lôi `rod` mở cửa `door`, đẩy cục phân `dball` làm bậc lên gờ, mây giông `storm` (đứng yên bị sét), cục phân lăn `dungroll`.
   (mục tiêu: người chơi tức muốn đập điện thoại nhưng vẫn muốn chơi lại).
-- Quái là **bọ chét chó** (vẽ bằng code trong `drawEnemy`): loại thường, loại nhảy (`hop`), loại gai (`spiky`), loại tách 3 (`split`), Vua bọ chét (`king`, đạp 2 lần).
+- Quái là **bọ chét chó** (vẽ bằng code trong `drawEnemy`): loại thường, loại nhảy (`hop`), loại gai (`spiky`), loại tách 3 (`split`), Vua bọ chét (`king`, đạp 2 lần). Màn 5 có thêm **bọ hung lăn phân** (`beetle`): chết thì cục phân nằm lại thành khối đẩy được.
 - Tạm thời KHÔNG đưa nội dung điện lạnh/HVAC vào game, chỉ tập trung bẫy bất ngờ.
 
 ## Kỹ thuật
