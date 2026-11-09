@@ -14,7 +14,7 @@ Hiệu ứng bụi, khói "bụp", dấu "!" và tia lửa là sprite sheet từ
 
 ## Cách chạy
 
-- **Link chơi:** https://thaianh111.github.io/lu-troll/ (sau khi bật GitHub Pages)
+- **Link chơi:** https://thaianh111.github.io/Lu-Troll/
 - Một file `index.html` duy nhất, không cần mạng sau khi tải. Xoay ngang điện thoại để chơi.
 - Điều khiển: nút ◀ ▶ và ⤒ trên màn hình, hoặc phím mũi tên / Space trên máy tính.
 

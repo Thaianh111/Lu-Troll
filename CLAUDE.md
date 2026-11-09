@@ -22,4 +22,4 @@
 
 ## Lịch sử
 - Bản thử đầu tiên làm trong repo `Thaianh111/game-moi` (thư mục `prototypes/lu-troll/`), ngày 2026-11-05.
-- Tách ra repo riêng `Thaianh111/lu-troll` ngày 2026-11-09.
+- Tách ra repo riêng `Thaianh111/Lu-Troll` ngày 2026-11-09.
