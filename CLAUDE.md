@@ -11,7 +11,7 @@
 
 ## Kỹ thuật
 - Toàn bộ game nằm trong **một file `index.html`** (HTML5 canvas + JS, không build, không thư viện ngoài).
-- Nhân vật Lu: hình gốc `art/lu-goc.png` (vẽ bằng SpriteCook), được cắt thành mảnh (thân, đuôi, lưỡi, 4 chân) nhúng trong `index.html` (biến `LU`) và cử động bằng code (`drawDog`). Đứng yên thì gảy đầu, lâu hơn thì đứng 3 chân tè.
+- Nhân vật Lu: hình gốc `art/lu-goc.png` (vẽ bằng SpriteCook). Hoạt ảnh làm bằng Sorceress AutoSprite V3 từ hình gốc (đứng yên, ngó nghiêng, chạy, nhảy, chết, gảy đầu, nhấc chân tè), đã xoá nền và thu nhỏ thành 1 tấm `art/lu-anim.png`, nhúng trong `index.html` (biến `LUA`, hàm `drawDog`). Đứng yên lâu: gảy đầu → ngó nghiêng → tè (lịch trong `IDLE`). Nước tè vẽ bằng code (`drawPee`).
 - Âm thanh tạo bằng WebAudio; hiệu ứng sprite từ pixelfx (MIT) đã nhúng sẵn trong file.
 - Chơi chính trên điện thoại (xoay ngang), có nút cảm ứng ◀ ▶ ⤒; máy tính dùng phím mũi tên / Space.
 - Host bằng GitHub Pages từ nhánh `main`, thư mục gốc.
