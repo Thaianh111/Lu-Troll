@@ -9,8 +9,16 @@ html,body{margin:0;height:100%;background:#1b1b2b;overflow:hidden;touch-action:n
 #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
 canvas{display:block;background:#7ec8f0}
 .ctl{position:fixed;bottom:14px;display:flex;gap:14px;z-index:5}
-#lft{left:14px}#rgt{right:14px}
-.b{width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.65);color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center;font-weight:bold}
+#rgt{right:18px;bottom:16px;width:200px;height:160px;display:block}
+#joyz{position:fixed;left:0;bottom:0;width:46%;height:62%;z-index:4;touch-action:none}
+#joy{position:fixed;left:26px;bottom:22px;width:132px;height:132px;border-radius:50%;background:radial-gradient(circle,rgba(0,0,0,.08),rgba(0,0,0,.22));border:2px solid rgba(255,255,255,.55);z-index:5;pointer-events:none;transition:opacity .2s}
+#joy .k{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;background:rgba(255,255,255,.6);border:2px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+#joy .ar{position:absolute;color:rgba(255,255,255,.7);font-size:15px;font-weight:bold}
+#bj{position:absolute;right:0;bottom:0;width:92px;height:92px;font-size:38px}
+#bd{position:absolute;right:104px;bottom:46px;width:68px;height:68px;font-size:30px;overflow:visible}
+#bdn{position:absolute;right:-4px;top:-4px;min-width:22px;height:22px;border-radius:11px;background:#ffd600;color:#222;font-size:14px;line-height:22px;text-align:center;padding:0 4px}
+#bdn:empty{display:none}
+.b{width:74px;height:74px;border-radius:50%;background:rgba(0,0,0,.22);border:2px solid rgba(255,255,255,.75);color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center;font-weight:bold}
 #mute{position:fixed;top:54px;right:12px;width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.35);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;z-index:6}
 #code{position:fixed;top:54px;right:62px;width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.35);color:#fff;font-size:19px;display:flex;align-items:center;justify-content:center;z-index:6}
 #cbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9;align-items:center;justify-content:center}
@@ -31,8 +39,8 @@ canvas{display:block;background:#7ec8f0}
   <input id="cin" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="code…"><br>
   <button id="cok">OK</button><button id="cx">Đóng</button>
   <div class="msg" id="cmsg"></div><div class="lv" id="clv" style="display:none"></div></div></div>
-<div class="ctl" id="lft"><div class="b" id="bl">◀</div><div class="b" id="br">▶</div></div>
-<div class="ctl" id="rgt"><div class="b" id="bd" style="display:none;background:rgba(255,214,0,.35);border-color:#ffe066">⚡</div><div class="b" id="bj">⤒</div></div>
+<div id="joyz"></div><div id="joy"><span class="ar" style="left:8px;top:54px">◀</span><span class="ar" style="right:8px;top:54px">▶</span><span class="ar" style="left:57px;top:4px">▲</span><div class="k" id="joyk"></div></div>
+<div class="ctl" id="rgt"><div class="b" id="bd" style="display:none;border-color:#ffe066"><span id="bdi">⚡</span><span id="bdn"></span></div><div class="b" id="bj">⤒</div></div>
 <script>
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const W=800,H=450,GR=0.6,SPD=4,JMP=12.2;
@@ -114,7 +122,20 @@ addEventListener('keyup',e=>{if(e.target&&e.target.tagName==='INPUT')return;if(k
 function bind(id,k){const el=document.getElementById(id);
   const on=e=>{e.preventDefault();K[k]=1},off=e=>{e.preventDefault();K[k]=0};
   el.addEventListener('pointerdown',on);['pointerup','pointerleave','pointercancel'].forEach(t=>el.addEventListener(t,off));}
-bind('bl','l');bind('br','r');bind('bj','j');bind('bd','d');
+bind('bj','j');bind('bd','d');
+(function(){ // CẦN ĐIỀU KHIỂN kiểu MOBA: kéo trái/phải để chạy, đẩy lên để nhảy
+  const z=document.getElementById('joyz'),J=document.getElementById('joy'),kn=document.getElementById('joyk'),R=52,home={l:26,b:22};
+  let id=null,cx=0,cy=0,jj=0;
+  const place=(x,y)=>{J.style.left=(x-66)+'px';J.style.bottom=(innerHeight-y-66)+'px';};
+  const reset=()=>{id=null;kn.style.transform='';K.l=K.r=0;if(jj){K.j=0;jj=0;}J.style.left=home.l+'px';J.style.bottom=home.b+'px';J.style.opacity='';};
+  z.addEventListener('pointerdown',e=>{e.preventDefault();if(id!==null)return;id=e.pointerId;z.setPointerCapture(id);
+    cx=Math.max(80,Math.min(innerWidth*0.46-70,e.clientX));cy=Math.max(80,Math.min(innerHeight-74,e.clientY));place(cx,cy);J.style.opacity='1';move(e);});
+  const move=e=>{if(e.pointerId!==id)return;e.preventDefault();let dx=e.clientX-cx,dy=e.clientY-cy;const d=Math.hypot(dx,dy);if(d>R){dx*=R/d;dy*=R/d;}
+    kn.style.transform='translate('+dx+'px,'+dy+'px)';K.l=dx<-14?1:0;K.r=dx>14?1:0;
+    const up=dy<-36;if(up&&!jj){K.j=1;jj=1;}else if(!up&&jj){K.j=0;jj=0;}};
+  z.addEventListener('pointermove',move);
+  ['pointerup','pointercancel','lostpointercapture'].forEach(t=>z.addEventListener(t,e=>{if(e.pointerId===id)reset();}));
+})();
 document.addEventListener('contextmenu',e=>e.preventDefault());
 // ---------- NÚT CODE: nhập T.a để chọn màn thử nhanh ----------
 let testMode=false;
@@ -363,7 +384,7 @@ function lv6(){
   s.push({x:5776,y:0,w:24,h:380,t:'egate'});
   C(5910,340,120);
   I(6060,6900);s.push({x:6900,y:120,w:100,h:330,t:'ground'});
-  return {name:'Màn 6 – Trên trời',isSky:true,zapStart:true,nrgMax:3,w:7000,cp:3160,s,sky:['#4f9ee8','#d6efff'],hill:'#fff',
+  return {name:'Màn 6 – Trên trời',isSky:true,power:{x:765,y:250},nrgMax:3,w:7000,cp:3160,s,sky:['#4f9ee8','#d6efff'],hill:'#fff',
     orbs:[{x:940,y:280},{x:1600,y:340},{x:2300,y:250},{x:3260,y:340},{x:4300,y:205},{x:5170,y:300},{x:5970,y:295}],
     wind:[{a:1150,b:1390,wx:-1.6},{a:3820,b:4520,wx:1.4,gust:true,per:170},{a:5800,b:6100,wx:-1.2}],
     en:[mkEn(1560,{bird:true,thief:true,by:322,a:1420,b:1660,vx:1.4,w:34,h:22,y:322}),
@@ -382,7 +403,7 @@ function lv6(){
     bones:[...boneRow(580,640,320),...boneRow(900,960,280),...boneRow(1440,1540,342),...boneRow(2600,3040,300,40),
            ...boneRow(3920,3990,205),...boneRow(4270,4330,165),...boneRow(5330,5480,342),...boneRow(6150,6300,342)],
     dark:{a:4620,b:5280},
-    signs:[{x:60,text:'Màn 6: Lên trời rồi! 😇'},{x:300,text:'Điện sét có hạn ⚡⚡⚡'},{x:1400,text:'Coi chừng quạ ăn trộm 🐦'},
+    signs:[{x:60,text:'Màn 6: Lên trời rồi! 😇'},{x:300,text:'Phép ⚡ nằm trên mây xám…'},{x:1400,text:'Coi chừng quạ ăn trộm 🐦'},
            {x:3130,text:'Bầy quạ nè 🐦🐦'},{x:3560,text:'Nhún mây hồng lên cao 🎈'},{x:5320,text:'Gần tới thiên đường 😇'},{x:6140,text:'Đích kìa!'}],
     flag:{x:6350,to:6860,trig:220},nextTxt:'Màn 7: về miền Tây sông nước 🌴'};
 }
@@ -400,7 +421,7 @@ function lv7(){ // MIỀN TÂY SÔNG NƯỚC: lục bình chìm, khúc gỗ cá 
   G(s,4880,4980);
   s.push({x:4980,y:400,w:190,h:50,t:'fake',manual:true,grp:'fc7'});
   G(s,5170,6100);wall(s,6100);
-  return {name:'Màn 7 – Miền Tây',theme:'river',zapStart:true,nrgMax:3,w:6200,cp:2450,s,sky:['#ffcc80','#fff3e0'],hill:'#7cb342',
+  return {name:'Màn 7 – Miền Tây',theme:'river',power:{x:1070,y:300},nrgMax:3,w:6200,cp:2450,s,sky:['#ffcc80','#fff3e0'],hill:'#7cb342',
     orbs:[{x:1180,y:330},{x:3400,y:300},{x:4480,y:330},{x:4640,y:330,evil:true}],
     en:[mkEn(1850),mkEn(2550,{spiky:true}),mkEn(2700,{hop:true}),mkEn(3060,{bird:true,by:300,a:3060,b:3640,vx:2,w:34,h:22,y:300}),
         mkEn(3500,{bird:true,by:250,a:3060,b:3640,vx:-2.4,w:34,h:22,y:250}),mkEn(3950,{beetle:true,w:52,h:34,y:366,vx:-1.1}),mkEn(5350,{hop:true}),mkEn(5600)],
@@ -413,7 +434,7 @@ function lv7(){ // MIỀN TÂY SÔNG NƯỚC: lục bình chìm, khúc gỗ cá 
     ],
     bones:[...boneRow(120,240,362),...boneRow(1330,1400,362),{x:1430,y:362,evil:true},{x:1464,y:362,evil:true},...boneRow(2040,2120,346),
            ...boneRow(2430,2560,362),...boneRow(3780,3860,362),{x:3900,y:362,evil:true},...boneRow(5250,5400,362)],
-    signs:[{x:60,text:'Màn 7: Về miền Tây 🌴'},{x:200,text:'Nghỉ dưới bóng dừa mát nè 😌'},{x:640,text:'Qua sông nhảy lục bình 🌿'},
+    signs:[{x:60,text:'Màn 7: Về miền Tây 🌴'},{x:200,text:'Nghỉ dưới bóng dừa mát nè 😌'},{x:640,text:'Phép ⚡ ở trên khúc gỗ kìa 🪵'},
            {x:1310,text:'Xương thơm phức 🦴'},{x:1900,text:'Cầu khỉ chắc lắm 💪'},{x:2880,text:'Ghe đưa qua sông 🛶'},{x:4340,text:'Khúc gỗ êm nè 🪵'}],
     flag:{x:5720,to:6040,trig:160},nextTxt:'Màn 8: sa mạc nắng cháy da 🏜️'};
 }
@@ -423,7 +444,7 @@ function lv8(){ // SA MẠC: nắng nóng (phải núp bóng râm), cát lún, �
   G(s,1880,2740);s.push({x:2740,y:400,w:160,h:50,t:'sink'});G(s,2900,4800);
   s.push({x:3700,y:0,w:24,h:400,t:'egate'},DOOR(4620,'p8'));
   G(s,4800,6300);wall(s,6300);
-  return {name:'Màn 8 – Sa mạc',theme:'desert',zapStart:true,nrgMax:3,w:6400,cp:3300,s,sky:['#ffb74d','#fff8e1'],hill:'#e6a65a',
+  return {name:'Màn 8 – Sa mạc',theme:'desert',power:{x:2300,y:205},nrgMax:3,w:6400,cp:3300,s,sky:['#ffb74d','#fff8e1'],hill:'#e6a65a',
     heat:{a:200,b:6250},shade:[{a:520,b:620},{a:1380,b:1470},{a:2260,b:2350,fake:true},{a:2430,b:2520},{a:3300,b:3400},{a:3540,b:4760,inv:true},{a:5100,b:5190},{a:5660,b:5750}],
     orbs:[{x:3600,y:340},{x:4100,y:330,evil:true},{x:4380,y:340}],
     en:[mkEn(1200,{beetle:true,w:52,h:34,y:366,vx:-1.1}),mkEn(1550,{hop:true}),mkEn(2600,{beetle:true,w:52,h:34,y:366,vx:-1.1}),
@@ -438,7 +459,7 @@ function lv8(){ // SA MẠC: nắng nóng (phải núp bóng râm), cát lún, �
     bones:[...boneRow(300,420,362),...boneRow(1100,1180,362),...boneRow(1960,2100,362),...boneRow(3000,3150,362),...boneRow(3780,3900,362),...boneRow(5220,5360,362)],
     dark:{a:3550,b:4760},
     signs:[{x:60,text:'Màn 8: Sa mạc nắng cháy 🏜️'},{x:380,text:'Nóng thì núp bóng râm ⛱️'},{x:800,text:'Cát mịn êm chân 😌'},
-           {x:1600,text:'Ốc đảo nước mát 💧'},{x:2150,text:'Bóng mát nè ⛱️'},{x:3440,text:'Trong kim tự tháp mát lạnh 🥶'}],
+           {x:1600,text:'Ốc đảo nước mát 💧'},{x:2150,text:'Phép ⚡ cao quá… nhờ gió? 🌪️'},{x:3440,text:'Trong kim tự tháp mát lạnh 🥶'}],
     flag:{x:5860,to:6220,trig:170},nextTxt:'Màn 9: núi tuyết lạnh run 🏔️'};
 }
 function lv9(){ // NÚI TUYẾT: băng trơn, hố tuyết phủ, cột băng rớt, người tuyết sống dậy, lửa sưởi giả, tuyết lở, bão tuyết
@@ -447,7 +468,7 @@ function lv9(){ // NÚI TUYẾT: băng trơn, hố tuyết phủ, cột băng r�
   s.push({x:1300,y:400,w:110,h:50,t:'fake'});G(s,1410,2500);
   s.push({x:2500,y:400,w:150,h:50,t:'ice'},{x:2760,y:400,w:240,h:50,t:'ice'});
   G(s,3000,3900);G(s,4040,4250);G(s,4420,6300);wall(s,6300);
-  return {name:'Màn 9 – Núi tuyết',theme:'snow',zapStart:true,nrgMax:3,w:6400,cp:3050,s,sky:['#90a4ae','#eceff1'],hill:'#cfd8dc',
+  return {name:'Màn 9 – Núi tuyết',theme:'snow',power:{x:2136,y:300},nrgMax:3,w:6400,cp:3050,s,sky:['#90a4ae','#eceff1'],hill:'#cfd8dc',
     wind:[{a:3880,b:4440,wx:1.3,gust:true,per:150}],
     orbs:[{x:2620,y:330},{x:3800,y:330},{x:4140,y:330},{x:5150,y:330,evil:true}],
     en:[mkEn(1150,{hop:true}),mkEn(1900,{statue:true,look:'snowman',w:30,h:44,y:356,spd:2}),mkEn(3500,{spiky:true}),
@@ -461,7 +482,7 @@ function lv9(){ // NÚI TUYẾT: băng trơn, hố tuyết phủ, cột băng r�
     bones:[...boneRow(640,860,362),...boneRow(1440,1560,362),...boneRow(2780,2960,362),{x:3300,y:362,evil:true},...boneRow(3340,3420,362),
            ...boneRow(4470,4560,362),...boneRow(5320,5460,362),{x:5490,y:362,evil:true}],
     signs:[{x:60,text:'Màn 9: Núi tuyết 🏔️'},{x:500,text:'Băng trơn, đi từ từ 🧊'},{x:1200,text:'Tuyết dày êm lắm ☃️'},
-           {x:2000,text:'Sưởi ấm nè 🔥'},{x:3150,text:'Yên tĩnh quá ha 🤫'},{x:3760,text:'Bão tuyết 🌨️'}],
+           {x:2000,text:'Sưởi ấm nè 🔥 (có ⚡ trên lửa)'},{x:3150,text:'Yên tĩnh quá ha 🤫'},{x:3760,text:'Bão tuyết 🌨️'}],
     flag:{x:5900,to:6220,trig:170},nextTxt:'Màn 10: lâu đài Vua Bọ Chét 🏰👑'};
 }
 function lv10(){ // LÂU ĐÀI VUA BỌ CHÉT: thảm biết cắn, đèn chùm rớt, súng lửa, dung nham, bộ giáp sống dậy, BOSS
@@ -474,7 +495,7 @@ function lv10(){ // LÂU ĐÀI VUA BỌ CHÉT: thảm biết cắn, đèn chùm 
   s.push(DOOR(4480,'arena',{open:true}));
   G(s,4500,5520);s.push(DOOR(5480,'boss'));
   G(s,5520,5800);s.push({x:5800,y:400,w:240,h:50,t:'fake',manual:true,grp:'fw'});G(s,6040,7200);wall(s,7150);
-  return {name:'Màn 10 – Lâu đài',theme:'castle',zapStart:true,nrgMax:4,w:7300,cp:4540,s,sky:['#1a1030','#4a2a5e'],hill:'#2c2438',
+  return {name:'Màn 10 – Lâu đài',theme:'castle',power:{x:2300,y:270},nrgMax:4,w:7300,cp:4540,s,sky:['#1a1030','#4a2a5e'],hill:'#2c2438',
     orbs:[{x:2500,y:340},{x:2900,y:300,evil:true},{x:3200,y:340},{x:3950,y:330},{x:4700,y:330},{x:5300,y:330}],
     en:[mkEn(1500,{statue:true,look:'knight',w:30,h:56,y:344,spd:2.2}),mkEn(1900,{hop:true}),
         mkEn(3200,{statue:true,look:'knight',w:30,h:56,y:344,spd:2.4}),mkEn(3450,{statue:true,look:'knight',w:30,h:56,y:344,spd:2.4}),
@@ -491,7 +512,7 @@ function lv10(){ // LÂU ĐÀI VUA BỌ CHÉT: thảm biết cắn, đèn chùm 
     ],
     bones:[...boneRow(130,260,362),...boneRow(980,1120,362),...boneRow(2760,2900,362),...boneRow(3850,3980,362),...boneRow(5560,5700,362),...boneRow(6100,6240,362)],
     dark:{a:3000,b:3600},
-    signs:[{x:60,text:'Màn 10: Lâu đài Vua Bọ Chét 🏰'},{x:360,text:'Chùi chân trước khi vô 🧹'},{x:980,text:'Đèn chùm đẹp ghê ✨'},
+    signs:[{x:60,text:'Màn 10: Lâu đài Vua Bọ Chét 🏰'},{x:360,text:'Chùi chân trước khi vô 🧹'},{x:980,text:'Đèn chùm đẹp ghê ✨'},{x:2050,text:'Phép ⚡ trên dung nham 🔥'},
            {x:4380,text:'👑 Phòng Vua Bọ Chét'},{x:5600,text:'Thoát rồi!!!'},{x:6400,text:'Thảm đỏ đón Lu 🟥'}],
     flag:{x:6780,to:7080,trig:180},nextTxt:''};
 }
@@ -560,11 +581,14 @@ function physBody(e,cloudOk){
   for(const o of L.s){if((solid(o)||(cloudOk&&isCloud(o)))&&ov(e,o)){if(e.vy>0){e.y=o.y-e.h;e.vy=0;}else{e.y=o.y+o.h;e.vy=0;}}}
 }
 
-const BD=document.getElementById('bd');
+const BD=document.getElementById('bd'),BDI=document.getElementById('bdi'),BDN=document.getElementById('bdn');let BDbg='';
 function update(){
   frame++;
-  if(L&&P){const dp=L.zap?'flex':'none';if(BD.style.display!==dp)BD.style.display=dp;
-    if(L.zap){const op=(P.dcd>0||(L.nrgMax&&L.nrg<=0))?'0.45':'1';if(BD.style.opacity!==op)BD.style.opacity=op;}}
+  if(L&&P){const lock=!L.zap,show=L.zap||(L.power&&!L.power.got),dp=show?'flex':'none';if(BD.style.display!==dp)BD.style.display=dp;
+    const ic=lock?'🔒':'⚡';if(BDI.textContent!==ic)BDI.textContent=ic;
+    const empty=L.zap&&L.nrgMax&&L.nrg<=0,pct=L.zap&&P.dcd>0?Math.round(P.dcd/30*100):0;
+    const bg=lock||empty?'rgba(110,110,110,.5)':'conic-gradient(rgba(0,0,0,.6) '+pct+'%, rgba(255,214,0,.42) 0)';
+    if(bg!==BDbg){BDbg=bg;BD.style.background=bg;}const n=L.zap&&L.nrgMax?String(L.nrg):'';if(BDN.textContent!==n)BDN.textContent=n;}
   if(state==='title'||state==='win'||state==='clear'){
     if(K.j&&!jPrev){
       if(state==='clear'){state='play';nextLevel();}
@@ -596,7 +620,8 @@ function update(){
   const dx=kr-kl,gd=P.gd;
   // ⚡ phép sấm sét: lướt ngang, trên không lướt được 1 lần
   if(P.dcd>0)P.dcd--;if(P.flash>0)P.flash--;if(P.poo>0)P.poo--;
-  if(L.zap&&L.nrgMax&&L.nrg<=0&&K.d&&!dPrev){toast('🔋 Hết điện rồi! Ăn cầu sét ⚡ hoặc đứng lên mây vàng để sạc',80);}
+  if(!L.zap&&K.d&&!dPrev&&L.power&&!L.power.got){toast('🔒 Chưa có phép sấm sét! Tìm cục ⚡ trong màn nha',80);}
+  else if(L.zap&&L.nrgMax&&L.nrg<=0&&K.d&&!dPrev){toast('🔋 Hết điện rồi! Ăn cầu sét ⚡ hoặc đứng lên mây vàng để sạc',80);}
   else if(L.zap&&K.d&&!dPrev&&!P.dash&&P.dcd<=0&&(P.on||!P.airDash)){
     if(L.nrgMax)L.nrg--;
     let dir=dx||P.face;
@@ -817,7 +842,7 @@ function trap(t){
     const o=t.o;if(o&&!o.land){o.vy+=0.7;o.y+=o.vy;if(ov(P,o))die('title');if(o.y+o.h>=400){o.y=400-o.h;o.land=1;SFX.stomp();spawnFx('dust',o.x+o.w/2,400,{scale:0.9});}}
   }else if(t.k==='tornado'){
     t.x+=t.v;if(t.x<t.a||t.x>t.b)t.v=-t.v;
-    if(!P.dash&&ov(P,{x:t.x-18,y:220,w:36,h:180})){P.vy=-11;P.x+=Math.sign(t.v)*7;P.on=false;if(!t.told){t.told=1;toast('🌪️ Lốc xoáy cuốn bay!',60,true);}hint('tornado');}
+    if(!P.dash&&ov(P,{x:t.x-18,y:220,w:36,h:180})){P.vy=-11;P.x+=(t.x-14-P.x)*0.3+Math.sin(frame/3)*2;P.on=false;if(!t.told){t.told=1;toast('🌪️ Lốc xoáy cuốn bay!',60,true);}hint('tornado');}
   }else if(t.k==='mirage'){if(P.x+14>t.a&&P.x+14<t.b&&P.y>380)hint('mirage');
   }else if(t.k==='fire'){if(ov(P,{x:t.x-4,y:368,w:40,h:32}))die('fire');
   }else if(t.k==='cannon'){ // súng bắn cầu lửa theo nhịp
