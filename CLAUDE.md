@@ -21,6 +21,7 @@
 - Âm thanh tạo bằng WebAudio; hiệu ứng sprite từ pixelfx (MIT) đã nhúng sẵn trong file.
 - Chơi chính trên điện thoại (xoay ngang), có nút cảm ứng ◀ ▶ ⤒; máy tính dùng phím mũi tên / Space.
 - Host bằng GitHub Pages từ nhánh `main`, thư mục gốc.
+- **APK Android**: GitHub Actions (`.github/workflows/apk.yml`) tự đóng gói bằng Capacitor mỗi khi `index.html`/`art/` đổi, đăng lên Releases tag `apk` (file `Lu-Troll.apk`). `android-build/patch.py` chỉnh xoay ngang, toàn màn hình, icon Lu; `android-build/debug.keystore` cố định để cài đè bản mới không phải gỡ.
 
 ## Quy ước
 - Giao tiếp, chữ trong game và tài liệu bằng **tiếng Việt**.
