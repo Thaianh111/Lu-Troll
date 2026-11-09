@@ -6,7 +6,9 @@
 - Game platformer troll kiểu Syobon Action ("con mèo trắng"): mỗi màn toàn bẫy bất ngờ.
 - Nhân vật chính: **Lu**, chú chó vàng, vòng cổ đỏ có chuông (chó là biểu tượng của tác giả).
 - Hướng thiết kế màn: màn 1 chỉ để khởi động, màn 2 có 10 bẫy, mỗi màn sau troll hơn màn trước
+  (hiện có 4 màn: 1 Khởi động · 2 Đập máy · 3 Đổi luật · 4 Hết tin nổi)
   (mục tiêu: người chơi tức muốn đập điện thoại nhưng vẫn muốn chơi lại).
+- Quái là **bọ chét chó** (vẽ bằng code trong `drawEnemy`): loại thường, loại nhảy (`hop`), loại gai (`spiky`), loại tách 3 (`split`), Vua bọ chét (`king`, đạp 2 lần).
 - Tạm thời KHÔNG đưa nội dung điện lạnh/HVAC vào game, chỉ tập trung bẫy bất ngờ.
 
 ## Kỹ thuật
