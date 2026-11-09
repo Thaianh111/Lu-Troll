@@ -472,13 +472,16 @@ function updIdle(dx,kj){
     const gx=P.x+14-P.face*34,gy=P.y+P.h;
     let pd=L.pud.find(q=>Math.abs(q.x-gx)<8&&Math.abs(q.y-gy)<4);
     if(!pd){pd={x:gx,y:gy,r:2,a:1};L.pud.push(pd);}
-    pd.r=Math.min(pd.r+0.09,16);pd.a=1;
+    pd.r=Math.min(pd.r+0.22,19);pd.a=1;
   }
 }
 function drawPee(){
-  for(const q of L.pud){ctx.globalAlpha=q.a*0.75;ctx.fillStyle='#f2d33b';
-    ctx.beginPath();ctx.ellipse(q.x,q.y+1,q.r,q.r*0.28,0,0,7);ctx.fill();
-    ctx.fillStyle='#fff6a8';ctx.fillRect(q.x-q.r*0.4,q.y-0.5,q.r*0.35,1.5);}
+  for(const q of L.pud){ // vũng nước tè: nằm trên mặt đất, có viền + chỗ loá sáng
+    const rx=q.r,ry=Math.max(2,q.r*0.32),y=q.y-ry*0.6;
+    ctx.globalAlpha=0.9;ctx.fillStyle='#d9b21f';
+    ctx.beginPath();ctx.ellipse(q.x,y+1,rx+1.5,ry+1.5,0,0,7);ctx.fill();
+    ctx.fillStyle='#f5d940';ctx.beginPath();ctx.ellipse(q.x,y,rx,ry,0,0,7);ctx.fill();
+    ctx.fillStyle='#fff7b0';ctx.beginPath();ctx.ellipse(q.x-rx*0.35,y-ry*0.3,rx*0.3,Math.max(1,ry*0.3),0,0,7);ctx.fill();}
   ctx.globalAlpha=1;
   const t=P.idle||0;if(state!=='play'||t<IDLE.peeStream||t>=IDLE.peeStop)return;
   const f=P.face,sx=P.x+14-f*17,sy=P.y+P.h-10,gx=P.x+14-f*34,gy=P.y+P.h;
