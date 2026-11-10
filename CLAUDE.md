@@ -19,7 +19,9 @@
 - Toàn bộ game nằm trong **một file `index.html`** (HTML5 canvas + JS, không build, không thư viện ngoài).
 - Nhân vật Lu: hình gốc `art/lu-goc.png` (vẽ bằng SpriteCook). Hoạt ảnh làm bằng Sorceress AutoSprite V3 từ hình gốc (đứng yên, ngó nghiêng, chạy, nhảy, chết, gảy đầu, nhấc chân tè), đã xoá nền và thu nhỏ thành 1 tấm `art/lu-anim.png`, nhúng trong `index.html` (biến `LUA`, hàm `drawDog`). Đứng yên lâu: gảy đầu → ngó nghiêng → tè (lịch trong `IDLE`). Nước tè vẽ bằng code (`drawPee`).
 - Ăn biểu tượng ⚡ xong Lu có **hào quang sấm sét** bao quanh: hiệu ứng pixelfx `lightning/electrified` nướng quanh vỏ bầu dục cỡ Lu (`art/lu-aura.png`, hàm `drawAura`).
-- **Nút 🔑 nhập code** (góc trên phải): code `T.a` mở chế độ thử, chọn thẳng màn bất kỳ.
+- **Màn chọn màn** `#lvsel` (hàm `openMap`, nút 🗺️ `#map` trong game): 10 thẻ có icon riêng (`LVICON`), qua màn N mới mở màn N+1 (`clearLevel`, lưu localStorage `lutroll_prog` = {u: màn mở cao nhất, c: các màn đã qua}). Bấm CHƠI THÔI / thắng game → về bản đồ.
+- **Cảnh chết chậm**: khựng ~0,6 giây + zoom rung vô mặt Lu, rồi bay lên và rớt từ từ (trọng lực 0.2), bảng "Chết rồi" hiện sau ~1,2 giây; sau ~1,7 giây bấm nhảy để chơi lại liền.
+- **Nút 🔑 nhập code** (góc trên phải): code `T.a` mở chế độ thử, chọn thẳng màn bất kỳ (bản đồ cũng mở hết).
 - **Màn giới thiệu studio** `#vtaSplash` (logo chó mực VTA Games, chép y từ game Nông Trại) rồi **banner tiêu đề** `#ttl` (Lu nhún nhảy, chữ LU TROLL lắc lư, nút ▶ CHƠI THÔI! bỏ chạy 2 lần mới cho bấm). Ảnh banner: `art/banner.png`, `art/vta-splash.png`.
 - **Nhạc nền "Lu Lu Gâu Gâu"** sáng tác bằng WebAudio (`BARS`, `SONG`, `bgmStep`): kèn kazoo, tuba um-pa, tiếng chó sủa gâu gâu, còi trượt, kèn xe đạp, khúc lén lút gõ mõ; bản nghe thử `art/nhac/Lu-Lu-Gau-Gau.mp3`. Màn sau nhanh dần; bị troll thì cả bài tụt giọng.
 - Âm thanh tạo bằng WebAudio; hiệu ứng sprite từ pixelfx (MIT) đã nhúng sẵn trong file.
