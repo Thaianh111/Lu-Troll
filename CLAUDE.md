@@ -43,3 +43,7 @@
 ## Lịch sử
 - Bản thử đầu tiên làm trong repo `Thaianh111/game-moi` (thư mục `prototypes/lu-troll/`), ngày 2026-11-05.
 - Tách ra repo riêng `Thaianh111/Lu-Troll` ngày 2026-11-09.
+
+## Task Observer (bật đầu mỗi buổi)
+- Ở đầu mỗi buổi làm việc có nhiều bước (code, sửa lỗi, làm asset, playtest...), **gọi skill `task-observer` trước khi bắt đầu** để nó ghi lại chỗ cần cải thiện skill. Sau khi context bị nén (compact) hoặc `/clear` cũng gọi lại.
+- Task Observer chỉ được **đề xuất** sửa/tạo skill. Trước khi thay đổi skill có sẵn (game-brainstorm, game-prototype, game-playtest-report, pixelfx, artcraft-game-assets, các skill của Game Studios...), phải hỏi anh Thái Anh và chờ đồng ý.
